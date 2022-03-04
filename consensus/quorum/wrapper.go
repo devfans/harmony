@@ -6,12 +6,12 @@ import (
 
 	"github.com/pkg/errors"
 
+	bls_core "github.com/harmony-one/bls/ffi/go/bls"
 	"github.com/harmony-one/harmony/consensus/votepower"
+	"github.com/harmony-one/harmony/crypto/bls"
 	nodeconfig "github.com/harmony-one/harmony/internal/configs/node"
 	shardingconfig "github.com/harmony-one/harmony/internal/configs/sharding"
 	"github.com/harmony-one/harmony/internal/params"
-	bls_core "github.com/harmony-one/bls/ffi/go/bls"
-	"github.com/harmony-one/harmony/crypto/bls"
 	"github.com/harmony-one/harmony/shard"
 )
 
@@ -66,7 +66,7 @@ func GetNetworkConfigAndShardSchedule(id shardingconfig.NetworkID) (
 }
 
 // Verify if all desired harmony accounts is set in slots of new epoch
-func CheckHarmonyAccountsInSlots(instance shardingconfig.Instance, shardID int, slots shard.SlotList) (err error) {
+func CheckHarmonyAccountsInSlots(instance shardingconfig.Instance, shardID int, slots shard.SlotList) (num int, err error) {
 	shardNum := int(instance.NumShards())
 	hmyAccounts := instance.HmyAccounts()
 	for j := 0; j < instance.NumHarmonyOperatedNodesPerShard(); j++ {
@@ -83,8 +83,10 @@ func CheckHarmonyAccountsInSlots(instance shardingconfig.Instance, shardID int, 
 			}
 		}
 		if !found {
-			return fmt.Errorf("unexpected harmony node not found in slots, pubkey: %s", pubKey.Hex())
+			err = fmt.Errorf("unexpected harmony node not found in slots, pubkey: %s", pubKey.Hex())
+			return
 		}
+		num++
 	}
 	return
 }
